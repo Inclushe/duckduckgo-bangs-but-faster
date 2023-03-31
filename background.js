@@ -11,6 +11,23 @@ fetch('https://duckduckgo.com/bang.js')
   })
   .catch(e => console.error(e))
 
+async function fallbackSearch (query) {
+    const engines = await browser.search.get()
+    for (let i = 0; i < engines.length; i++) {
+        if (engines[i]['isDefault']) {
+	  let usedEngine = engines[i]['name']
+	  if (engines[i]['name'] === 'DDG !Bangs') {
+	      usedEngine = engines[1]['name']
+	  }
+	  browser.search.search({
+	      query: query,
+	      engine: usedEngine,
+	      disposition: 'CURRENT_TAB'
+	  })
+        }
+    }
+}
+
 function redirect (requestDetails) {
   const url = new URL(requestDetails.url)
   const params = new URLSearchParams(url.search)
@@ -35,10 +52,11 @@ function redirect (requestDetails) {
     return {
       redirectUrl: newSearchURL.replace('{{{s}}}', encodeURIComponent(string))
     }
-  } else {
-    return {
-      cancel: false
-    }
+  } else if (url.hostname === 'bangs-but-faster.invalid') {
+    fallbackSearch(string)
+  }
+  return {
+    cancel: false
   }
 }
 

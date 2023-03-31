@@ -10,6 +10,7 @@
     "128": "icons/icon-128.png"
   },
   "permissions": [
+    "search",
     "webRequest",
     "webRequestBlocking",
     "*://duckduckgo.com/*",
