@@ -1,4 +1,4 @@
-const pattern = '*://duckduckgo.com/*'
+const patterns = [ '*://duckduckgo.com/*', '*://bangs-but-faster.invalid/*' ]
 const lookup = {}
 
 // eslint-disable-next-line no-undef
@@ -23,7 +23,7 @@ function redirect (requestDetails) {
     if (word[0] === '!' && lookup[word.slice(1)] !== undefined && !foundMatchingBang) {
       newSearchURL = lookup[word.slice(1)]
       foundMatchingBang = true
-      return false
+      return false;
     }
     if (word === '') {
       return false
@@ -55,13 +55,13 @@ function rewriteCSP (requestDetails) {
 // eslint-disable-next-line no-undef
 browser.webRequest.onBeforeRequest.addListener(
   redirect,
-  { urls: [pattern], types: ['main_frame'] },
+  { urls: patterns, types: ['main_frame'] },
   ['blocking']
 )
 
 // eslint-disable-next-line no-undef
 chrome.webRequest.onHeadersReceived.addListener(
   rewriteCSP,
-  { urls: [pattern] },
+  { urls: patterns },
   ['blocking', 'responseHeaders']
 )
