@@ -10,9 +10,11 @@
     "128": "icons/icon-128.png"
   },
   "permissions": [
+    "search",
     "webRequest",
     "webRequestBlocking",
     "*://duckduckgo.com/*",
+    "*://bangs-but-faster.invalid/*",
     "https://duckduckgo.com/bang.js"
   ],
   "background": {
@@ -20,5 +22,15 @@
       "browser-polyfill.min.js",
       "background.js"
     ]
+  },
+  "chrome_settings_overrides": {
+    "search_provider": {
+      "name": "DDG !Bangs",
+      "keyword": "!",
+      "favicon_url": "https://gitlab.com/Inclushe/duckduckgo-bangs-but-faster/-/raw/0454ac1034d5d1b31cd70dd474448d69bfc72802/icons/icon-16.png?inline=false",
+      "search_url": "https://bangs-but-faster.invalid/?q={searchTerms}",
+      "encoding": "UTF-8",
+      "is_default": false
+    }
   }
 }

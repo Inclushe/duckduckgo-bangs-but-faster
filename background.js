@@ -1,4 +1,4 @@
-const pattern = '*://duckduckgo.com/*'
+const patterns = [ '*://duckduckgo.com/*', '*://bangs-but-faster.invalid/*' ]
 const lookup = {}
 
 // eslint-disable-next-line no-undef
@@ -10,6 +10,23 @@ fetch('https://duckduckgo.com/bang.js')
     })
   })
   .catch(e => console.error(e))
+
+async function fallbackSearch (query) {
+    const engines = await browser.search.get()
+    for (let i = 0; i < engines.length; i++) {
+        if (engines[i]['isDefault']) {
+	  let usedEngine = engines[i]['name']
+	  if (engines[i]['name'] === 'DDG !Bangs') {
+	      usedEngine = engines[1]['name']
+	  }
+	  browser.search.search({
+	      query: query,
+	      engine: usedEngine,
+	      disposition: 'CURRENT_TAB'
+	  })
+        }
+    }
+}
 
 function redirect (requestDetails) {
   const url = new URL(requestDetails.url)
@@ -23,7 +40,7 @@ function redirect (requestDetails) {
     if (word[0] === '!' && lookup[word.slice(1)] !== undefined && !foundMatchingBang) {
       newSearchURL = lookup[word.slice(1)]
       foundMatchingBang = true
-      return false
+      return false;
     }
     if (word === '') {
       return false
@@ -35,10 +52,11 @@ function redirect (requestDetails) {
     return {
       redirectUrl: newSearchURL.replace('{{{s}}}', encodeURIComponent(string))
     }
-  } else {
-    return {
-      cancel: false
-    }
+  } else if (url.hostname === 'bangs-but-faster.invalid') {
+    fallbackSearch(string)
+  }
+  return {
+    cancel: false
   }
 }
 
@@ -55,13 +73,13 @@ function rewriteCSP (requestDetails) {
 // eslint-disable-next-line no-undef
 browser.webRequest.onBeforeRequest.addListener(
   redirect,
-  { urls: [pattern], types: ['main_frame'] },
+  { urls: patterns, types: ['main_frame'] },
   ['blocking']
 )
 
 // eslint-disable-next-line no-undef
 chrome.webRequest.onHeadersReceived.addListener(
   rewriteCSP,
-  { urls: [pattern] },
+  { urls: patterns },
   ['blocking', 'responseHeaders']
 )
